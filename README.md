@@ -8,13 +8,38 @@ nativo.
 ## Status
 
 **Fase 1 — Passo 1: engine pura do puzzle.** ✅
+**Fase 1 — Passo 2: UI do tanque conectada à engine + i18n.** ✅
 
-A UI ainda não existe. O que está pronto é o motor de regras do jogo, em
-`src/engine/`, sem nenhuma dependência de React — só TypeScript puro,
-testável isoladamente e reaproveitável depois em React Native.
+O tanque é jogável no navegador: grid renderizado a partir do `Board` da
+engine, peixes coloridos com idle animado, toque para mover, nadada de
+saída, bolinha de "!" + shake quando bloqueado, bolhas ambiente e leve
+cáustica no fundo. Estrutura de i18n (`i18next` + `react-i18next`) já
+plugada desde já, com `pt-BR` e `en-US` completos e um seletor de idioma no
+header — nenhum texto de UI é hardcoded, tudo via `t('...')`.
 
-Próximos passos (ainda não iniciados): UI do tanque + i18n, HUD e ações
-(dica/desfazer/embaralhar), modais de vitória/derrota e loja/ranking mock.
+Próximos passos (ainda não iniciados): HUD (vidas/moedas/nível) + ações
+(dica/desfazer/embaralhar), modais de vitória/derrota, loja/ranking mock.
+
+### Rodando localmente
+
+```bash
+npm install
+npm run dev       # http://localhost:5173
+```
+
+### Estrutura da UI (`src/`)
+
+| Pasta/arquivo | Responsabilidade |
+| --- | --- |
+| `engine/` | Motor puro do puzzle (ver seção abaixo) — sem React. |
+| `theme/palette.ts` | Único lugar que mapeia `ColorId` da engine → cor visual + chave i18n. A engine não conhece hex codes. |
+| `state/useGameStore.ts` | Store Zustand: gera o nível (via `generateLevel`), expõe `attemptMove`/`startNewLevel`, guarda o estado de "bloqueado" para a UI. |
+| `components/Tank.tsx` | O tanque: grid, bolhas, cáustica, monta `Fish`/`ExitMarker`/`ObstacleMark`. |
+| `components/Fish.tsx` | Um peixe: idle bob, cauda balançando, gira para encarar seu sentido fixo, nadada de saída (`AnimatePresence`), shake + "!" quando bloqueado. |
+| `components/ExitMarker.tsx` | Abertura colorida na parede, na borda correspondente à direção/linha da saída. |
+| `components/ObstacleMark.tsx` | Coral fixo — nunca se move, nunca é tocável. |
+| `components/Bubbles.tsx` | Bolhas subindo no fundo, puramente ambiente. |
+| `i18n/index.ts` + `locales/*.json` | Setup do i18next, detecção automática de idioma do navegador, `pt-BR`/`en-US`. |
 
 ## A engine (`src/engine/`)
 

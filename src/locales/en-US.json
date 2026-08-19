@@ -1,0 +1,28 @@
+{
+  "game": {
+    "tagline": "Free every fish through its matching current.",
+    "tankLabel": "Aquarium puzzle board",
+    "fishAria": "{{color}} fish, tap to swim out",
+    "newLevel": "New level",
+    "obstacleAria": "Coral, blocks the path",
+    "tapHint": "Tap a fish to send it swimming toward its colored current.",
+    "status": {
+      "playing": "Swim them all out!",
+      "won": "Tank cleared!",
+      "deadlock": "No fish can move — stuck!"
+    }
+  },
+  "colors": {
+    "coralPink": "coral pink",
+    "turquoise": "turquoise",
+    "sunYellow": "sun yellow",
+    "algaeGreen": "algae green",
+    "seaLavender": "sea lavender",
+    "clownfishOrange": "clownfish orange"
+  },
+  "language": {
+    "label": "Language",
+    "pt-BR": "Português",
+    "en-US": "English"
+  }
+}
