@@ -15,6 +15,7 @@ function entity(overrides: Partial<Entity>): Entity {
     direction: 'right',
     row: 0,
     col: 0,
+    value: 1,
     ...overrides,
   };
 }

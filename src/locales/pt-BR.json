@@ -3,6 +3,7 @@
     "tagline": "Solte cada peixe pela corrente da sua cor.",
     "tankLabel": "Tabuleiro do aquário",
     "fishAria": "Peixe {{color}}, toque para nadar para fora",
+    "fishAriaWithValue": "Peixe {{color}} que vale {{value}}, toque para nadar para fora",
     "newLevel": "Novo nível",
     "obstacleAria": "Coral, bloqueia o caminho",
     "tapHint": "Toque em um peixe para ele nadar até a corrente da sua cor.",
@@ -12,13 +13,23 @@
       "deadlock": "Nenhum peixe consegue se mover — travou!"
     }
   },
+  "goals": {
+    "aria": "Correntes do nível",
+    "progress": "{{current}}/{{target}}",
+    "lockedAria": "Corrente travada",
+    "completedAria": "Corrente concluída",
+    "unlock": "Abrir",
+    "unlockHint": "Assistir anúncio (mock — billing real entra aqui depois)"
+  },
   "colors": {
     "coralPink": "rosa-coral",
     "turquoise": "turquesa",
     "sunYellow": "amarelo-sol",
     "algaeGreen": "verde-alga",
     "seaLavender": "lavanda-do-mar",
-    "clownfishOrange": "laranja-peixe-palhaço"
+    "clownfishOrange": "laranja-peixe-palhaço",
+    "deepBlue": "azul-profundo",
+    "berryRed": "vermelho-fruta"
   },
   "language": {
     "label": "Idioma",

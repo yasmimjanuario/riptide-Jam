@@ -38,6 +38,12 @@ export interface Cell {
  * it must be consistent with `orientation`:
  *   - horizontal → 'left' | 'right'
  *   - vertical   → 'up' | 'down'
+ *
+ * `value` is how much this entity contributes to its color's goal when it
+ * exits (see `ColorGoal`) — a bigger piece is typically worth more, the
+ * same way a bus carries more than a car in the genre this is drawn from.
+ * Plain movement/exit rules never look at `value`; only the goal layer
+ * (`goals.ts`) does.
  */
 export interface Entity {
   id: string;
@@ -47,6 +53,7 @@ export interface Entity {
   direction: Direction;
   row: number;
   col: number;
+  value: number;
 }
 
 /** A fixed, immovable single-cell blocker ("coral"/"rock" in the UI layer). */
@@ -85,3 +92,38 @@ export interface MoveResult {
 }
 
 export type BoardStatus = 'playing' | 'won' | 'deadlock';
+
+/**
+ * A goal for one color in a `Level`: its exit stays open until the total
+ * `value` of the entities of that color that have exited reaches `target`.
+ * Extra entities of that color beyond what's needed to hit the target are
+ * legal (and common) — they just become permanent blockers once the goal
+ * closes.
+ */
+export interface ColorGoal {
+  colorId: ColorId;
+  target: number;
+}
+
+/**
+ * A full level: a static `board` (every entity + every goal color's exit,
+ * all present from the start — nothing is added later) plus an ordered
+ * queue of `goals`.
+ *
+ * At most `activeSlots` goals are open at once, always the earliest
+ * `activeSlots` goals (in queue order) that aren't complete yet. When an
+ * open goal completes, its exit closes and the next queued goal takes the
+ * freed slot. `board.exits` itself is never mutated — it holds the full,
+ * fixed geometry for every goal color for the whole game; which of those
+ * exits are currently usable is entirely determined by `goals` + how much
+ * of each color has exited so far (see `goals.ts`).
+ */
+export interface Level {
+  board: Board;
+  goals: ColorGoal[];
+  activeSlots: number;
+  /** Total value of each color present in the level at the start (required + any overflow). */
+  initialValueByColor: Record<ColorId, number>;
+}
+
+export type LevelStatus = 'playing' | 'won' | 'deadlock';

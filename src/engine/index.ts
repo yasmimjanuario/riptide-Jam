@@ -4,3 +4,7 @@ export * from './rules';
 export * from './solver';
 export * from './generator';
 export * from './rng';
+export * from './placement';
+export * from './goals';
+export * from './questGenerator';
+export * from './questSolver';

@@ -3,6 +3,7 @@
     "tagline": "Free every fish through its matching current.",
     "tankLabel": "Aquarium puzzle board",
     "fishAria": "{{color}} fish, tap to swim out",
+    "fishAriaWithValue": "{{color}} fish worth {{value}}, tap to swim out",
     "newLevel": "New level",
     "obstacleAria": "Coral, blocks the path",
     "tapHint": "Tap a fish to send it swimming toward its colored current.",
@@ -12,13 +13,23 @@
       "deadlock": "No fish can move — stuck!"
     }
   },
+  "goals": {
+    "aria": "Level currents",
+    "progress": "{{current}}/{{target}}",
+    "lockedAria": "Locked current",
+    "completedAria": "Current complete",
+    "unlock": "Unlock",
+    "unlockHint": "Watch ad (mock — real billing goes here later)"
+  },
   "colors": {
     "coralPink": "coral pink",
     "turquoise": "turquoise",
     "sunYellow": "sun yellow",
     "algaeGreen": "algae green",
     "seaLavender": "sea lavender",
-    "clownfishOrange": "clownfish orange"
+    "clownfishOrange": "clownfish orange",
+    "deepBlue": "deep blue",
+    "berryRed": "berry red"
   },
   "language": {
     "label": "Language",
