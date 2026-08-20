@@ -1,7 +1,9 @@
-import { findPlacementForExit, generateOneExitPerColor, markOccupied, placeObstacles } from './placement';
-import { createSeededRandom, pickRandom, shuffle, type RandomFn } from './rng';
+import { cellKey, getEntityCells, getFrontCell, getPathCells, orientationForDirection } from './grid';
+import { createSeededRandom, pickRandom, randomInt, shuffle, type RandomFn } from './rng';
 import { solveBoard } from './solver';
-import type { Board, ColorId, Entity, EntityLength, Exit } from './types';
+import type { Board, ColorId, Direction, Entity, EntityLength, Exit, Obstacle } from './types';
+
+const ALL_DIRECTIONS: Direction[] = ['up', 'down', 'left', 'right'];
 
 export interface GeneratorConfig {
   width: number;
@@ -30,11 +32,7 @@ export interface GeneratorResult {
 }
 
 /**
- * Generates a random, guaranteed-solvable "classic" level: every exit is
- * open from the start, every entity is worth 1 (no goal/value layer). This
- * is the simplest possible mode and mainly exists as a baseline/testing
- * utility now — `questGenerator.ts` builds the staged, goal-based levels
- * actually used by the game.
+ * Generates a random, guaranteed-solvable level.
  *
  * Levels are built back-to-front: we decide the exits first, then place
  * entities one at a time, always checking that each new entity has a clear
@@ -105,56 +103,159 @@ interface InternalConfig {
 function tryGenerateOnce(config: InternalConfig): Board | null {
   const { width, height, colors, entityCount, extraExits, obstacleCount, lengths, rng } = config;
 
-  const exits = generateExitsWithExtras(width, height, colors, extraExits, rng);
-  if (!exits) return null;
+  const exits = generateExits(width, height, colors, extraExits, rng);
+  if (exits.length === 0) return null;
 
   const obstacles = placeObstacles(width, height, obstacleCount, rng);
 
-  const occupied = new Set<string>(obstacles.map((o) => `${o.row},${o.col}`));
+  const occupied = new Set<string>(obstacles.map((o) => cellKey(o)));
   const entities: Entity[] = [];
 
   for (let i = 0; i < entityCount; i++) {
-    // Try every exit (shuffled) rather than committing to one random pick,
-    // so a single cramped exit doesn't sink the whole attempt when another
-    // exit still has room.
-    let placed: Entity | null = null;
-    for (const exit of shuffle(exits, rng)) {
-      placed = findPlacementForExit(
-        { id: `entity-${i}`, colorId: exit.colorId, value: 1, exit, lengths },
-        width,
-        height,
-        occupied,
-        rng,
-      );
-      if (placed) break;
-    }
-    if (!placed) return null; // couldn't fit this entity anywhere — abandon the attempt
+    const placed = placeOneEntity({
+      id: `entity-${i}`,
+      width,
+      height,
+      exits,
+      lengths,
+      occupied,
+      placedEntities: entities,
+      rng,
+    });
+    if (!placed) return null; // couldn't fit this entity — abandon the attempt
     entities.push(placed);
-    markOccupied(occupied, placed);
+    for (const cell of getEntityCells(placed)) occupied.add(cellKey(cell));
   }
 
   return { width, height, entities, obstacles, exits };
 }
 
 /** One exit per color, plus `extraExits` additional random ones, all on unique wall slots. */
-function generateExitsWithExtras(
+function generateExits(
   width: number,
   height: number,
   colors: ColorId[],
   extraExits: number,
   rng: RandomFn,
-): Exit[] | null {
-  const used = new Set<string>();
-  const exits = generateOneExitPerColor(width, height, colors, rng, used);
-  if (!exits) return null;
+): Exit[] {
+  const used = new Set<string>(); // `${direction}:${lineIndex}`
+  const exits: Exit[] = [];
 
+  const tryAddExit = (colorId: ColorId): boolean => {
+    const candidates = shuffle(ALL_DIRECTIONS, rng);
+    for (const direction of candidates) {
+      const axisSize = orientationForDirection(direction) === 'horizontal' ? height : width;
+      const lineIndexes = shuffle(
+        Array.from({ length: axisSize }, (_, idx) => idx),
+        rng,
+      );
+      for (const lineIndex of lineIndexes) {
+        const slotKey = `${direction}:${lineIndex}`;
+        if (used.has(slotKey)) continue;
+        used.add(slotKey);
+        exits.push({ direction, lineIndex, colorId });
+        return true;
+      }
+    }
+    return false;
+  };
+
+  for (const color of colors) {
+    if (!tryAddExit(color)) return [];
+  }
   for (let i = 0; i < extraExits; i++) {
     const color = pickRandom(colors, rng);
-    // Shares `used` with the call above, so an extra can never collide with
-    // a wall slot a primary (or earlier extra) exit already claimed.
-    const extra = generateOneExitPerColor(width, height, [color], rng, used);
-    if (extra) exits.push(...extra); // best-effort; running out of wall slots just skips it
+    tryAddExit(color); // best-effort; running out of wall slots just skips it
   }
 
   return exits;
+}
+
+function placeObstacles(width: number, height: number, count: number, rng: RandomFn): Obstacle[] {
+  const obstacles: Obstacle[] = [];
+  const occupied = new Set<string>();
+  let guard = 0;
+  while (obstacles.length < count && guard < count * 50) {
+    guard++;
+    const row = randomInt(rng, height);
+    const col = randomInt(rng, width);
+    const key = cellKey({ row, col });
+    if (occupied.has(key)) continue;
+    occupied.add(key);
+    obstacles.push({ row, col });
+  }
+  return obstacles;
+}
+
+interface PlaceOneEntityArgs {
+  id: string;
+  width: number;
+  height: number;
+  exits: Exit[];
+  lengths: EntityLength[];
+  occupied: Set<string>;
+  placedEntities: Entity[];
+  rng: RandomFn;
+}
+
+/**
+ * Finds a valid placement for one new entity, trying random colors/exits/
+ * lengths/anchors until one fits given the cells already occupied. Returns
+ * null if nothing fits after exhausting reasonable options.
+ */
+function placeOneEntity(args: PlaceOneEntityArgs): Entity | null {
+  const { id, width, height, exits, lengths, occupied, rng } = args;
+
+  const exitOrder = shuffle(exits, rng);
+  for (const exit of exitOrder) {
+    const orientation = orientationForDirection(exit.direction);
+    const lengthOrder = shuffle(lengths, rng);
+    for (const length of lengthOrder) {
+      const axisSize = orientation === 'horizontal' ? width : height;
+      if (length > axisSize) continue;
+
+      const anchorOrder = shuffle(
+        Array.from({ length: axisSize - length + 1 }, (_, idx) => idx),
+        rng,
+      );
+
+      for (const anchor of anchorOrder) {
+        const candidate: Entity = {
+          id,
+          colorId: exit.colorId,
+          length: length as EntityLength,
+          orientation,
+          direction: exit.direction,
+          row: orientation === 'horizontal' ? exit.lineIndex : anchor,
+          col: orientation === 'horizontal' ? anchor : exit.lineIndex,
+        };
+
+        if (isPlacementValid(candidate, occupied, width, height)) {
+          return candidate;
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+function isPlacementValid(
+  candidate: Entity,
+  occupied: Set<string>,
+  width: number,
+  height: number,
+): boolean {
+  const ownCells = getEntityCells(candidate);
+  if (ownCells.some((cell) => occupied.has(cellKey(cell)))) return false;
+
+  const path = getPathCells(candidate, width, height);
+  if (path.some((cell) => occupied.has(cellKey(cell)))) return false;
+
+  // Defensive: front cell must actually be inside the board (guaranteed by
+  // construction, but cheap to assert).
+  const front = getFrontCell(candidate);
+  if (front.row < 0 || front.row >= height || front.col < 0 || front.col >= width) return false;
+
+  return true;
 }

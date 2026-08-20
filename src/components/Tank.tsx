@@ -1,29 +1,19 @@
 import { AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import type { Board, ColorGoal, LevelProgress } from '../engine';
+import type { Board } from '../engine';
 import Bubbles from './Bubbles';
-import ExitMarker, { type ExitMarkerStatus } from './ExitMarker';
+import ExitMarker from './ExitMarker';
 import Fish from './Fish';
 import ObstacleMark from './ObstacleMark';
 
 interface TankProps {
   board: Board;
-  goals: ColorGoal[];
-  progress: LevelProgress;
-  activeColorIds: Set<string>;
   blockedEntityId: string | null;
   blockedNonce: number;
   onTapEntity: (entityId: string) => void;
 }
 
-function getExitStatus(colorId: string, goals: ColorGoal[], progress: LevelProgress, activeColorIds: Set<string>): ExitMarkerStatus {
-  const goal = goals.find((g) => g.colorId === colorId);
-  const removed = progress.removedValueByColor[colorId] ?? 0;
-  if (goal && removed >= goal.target) return 'completed';
-  return activeColorIds.has(colorId) ? 'active' : 'locked';
-}
-
-export default function Tank({ board, goals, progress, activeColorIds, blockedEntityId, blockedNonce, onTapEntity }: TankProps) {
+export default function Tank({ board, blockedEntityId, blockedNonce, onTapEntity }: TankProps) {
   const { t } = useTranslation();
   const { width, height } = board;
 
@@ -39,13 +29,7 @@ export default function Tank({ board, goals, progress, activeColorIds, blockedEn
       <Bubbles />
 
       {board.exits.map((exit) => (
-        <ExitMarker
-          key={`exit-${exit.direction}-${exit.lineIndex}`}
-          exit={exit}
-          width={width}
-          height={height}
-          status={getExitStatus(exit.colorId, goals, progress, activeColorIds)}
-        />
+        <ExitMarker key={`exit-${exit.direction}-${exit.lineIndex}`} exit={exit} width={width} height={height} />
       ))}
 
       <div
@@ -67,7 +51,6 @@ export default function Tank({ board, goals, progress, activeColorIds, blockedEn
               boardWidth={width}
               boardHeight={height}
               blockedNonce={blockedEntityId === entity.id ? blockedNonce : 0}
-              isColorActive={activeColorIds.has(entity.colorId)}
               onTap={() => onTapEntity(entity.id)}
             />
           ))}

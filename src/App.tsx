@@ -1,27 +1,21 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import GoalBar from './components/GoalBar';
 import Tank from './components/Tank';
-import { MAX_BONUS_SLOTS, useGameStore } from './state/useGameStore';
+import { useGameStore } from './state/useGameStore';
 import { SUPPORTED_LANGUAGES } from './i18n';
 
 function App() {
   const { t, i18n } = useTranslation();
-  const level = useGameStore((state) => state.level);
   const board = useGameStore((state) => state.board);
-  const progress = useGameStore((state) => state.progress);
-  const activeColorIds = useGameStore((state) => state.activeColorIds);
   const status = useGameStore((state) => state.status);
-  const bonusSlots = useGameStore((state) => state.bonusSlots);
   const blockedEntityId = useGameStore((state) => state.blockedEntityId);
   const blockedNonce = useGameStore((state) => state.blockedNonce);
   const startNewLevel = useGameStore((state) => state.startNewLevel);
   const attemptMove = useGameStore((state) => state.attemptMove);
-  const unlockBonusSlot = useGameStore((state) => state.unlockBonusSlot);
 
   useEffect(() => {
-    if (!level) startNewLevel();
-  }, [level, startNewLevel]);
+    if (!board) startNewLevel();
+  }, [board, startNewLevel]);
 
   return (
     <div className="flex min-h-svh flex-col items-center gap-4 bg-gradient-to-b from-slate-950 to-slate-900 px-4 py-6 text-white">
@@ -46,23 +40,9 @@ function App() {
         </div>
       </header>
 
-      {level && progress && (
-        <GoalBar
-          goals={level.goals}
-          progress={progress}
-          activeColorIds={activeColorIds}
-          bonusSlots={bonusSlots}
-          maxBonusSlots={MAX_BONUS_SLOTS}
-          onUnlockBonusSlot={unlockBonusSlot}
-        />
-      )}
-
-      {level && board && progress && (
+      {board && (
         <Tank
           board={board}
-          goals={level.goals}
-          progress={progress}
-          activeColorIds={activeColorIds}
           blockedEntityId={blockedEntityId}
           blockedNonce={blockedNonce}
           onTapEntity={attemptMove}

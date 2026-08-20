@@ -22,8 +22,6 @@ export const PALETTE: ColorSwatch[] = [
   { id: 'algae-green', hex: '#6ec24d', glow: '#b8e6a4', labelKey: 'colors.algaeGreen' },
   { id: 'sea-lavender', hex: '#9b8cf2', glow: '#d3caf9', labelKey: 'colors.seaLavender' },
   { id: 'clownfish-orange', hex: '#ff8c42', glow: '#ffc59a', labelKey: 'colors.clownfishOrange' },
-  { id: 'deep-blue', hex: '#3d84f7', glow: '#a8c8fc', labelKey: 'colors.deepBlue' },
-  { id: 'berry-red', hex: '#e6483f', glow: '#f5aca7', labelKey: 'colors.berryRed' },
 ];
 
 export const PALETTE_COLOR_IDS: ColorId[] = PALETTE.map((swatch) => swatch.id);

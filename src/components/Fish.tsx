@@ -10,8 +10,6 @@ interface FishProps {
   boardHeight: number;
   /** Nonce that increments each time this fish's tap was blocked; 0 = never. */
   blockedNonce: number;
-  /** Whether this fish's color currently has an open current at all (independent of geometric blocking). */
-  isColorActive: boolean;
   onTap: () => void;
 }
 
@@ -23,9 +21,6 @@ const DIRECTION_ROTATION: Record<Direction, number> = {
   right: 180,
   down: -90,
 };
-
-/** A piece worth this much or more gets a little sparkle flourish — the "bus" tier. */
-const SPARKLE_VALUE_THRESHOLD = 3;
 
 function getExitOffset(direction: Direction, boardWidth: number, boardHeight: number) {
   // Travel far enough (relative to the fish's own size) to clear the tank
@@ -44,10 +39,9 @@ function getExitOffset(direction: Direction, boardWidth: number, boardHeight: nu
   }
 }
 
-export default function Fish({ entity, boardWidth, boardHeight, blockedNonce, isColorActive, onTap }: FishProps) {
+export default function Fish({ entity, boardWidth, boardHeight, blockedNonce, onTap }: FishProps) {
   const { t } = useTranslation();
   const swatch = getSwatch(entity.colorId);
-  const isDeluxe = entity.value >= SPARKLE_VALUE_THRESHOLD;
 
   const gridStyle: CSSProperties =
     entity.orientation === 'horizontal'
@@ -55,10 +49,6 @@ export default function Fish({ entity, boardWidth, boardHeight, blockedNonce, is
       : { gridColumn: `${entity.col + 1} / span 1`, gridRow: `${entity.row + 1} / span ${entity.length}` };
 
   const exitOffset = getExitOffset(entity.direction, boardWidth, boardHeight);
-  const ariaLabel =
-    entity.value > 1
-      ? t('game.fishAriaWithValue', { color: t(swatch.labelKey), value: entity.value })
-      : t('game.fishAria', { color: t(swatch.labelKey) });
 
   return (
     <motion.button
@@ -72,7 +62,7 @@ export default function Fish({ entity, boardWidth, boardHeight, blockedNonce, is
       transition={{ type: 'spring', stiffness: 340, damping: 22 }}
       whileTap={{ scale: 0.92 }}
       onClick={onTap}
-      aria-label={ariaLabel}
+      aria-label={t('game.fishAria', { color: t(swatch.labelKey) })}
     >
       {/* Shake wrapper: remounts (and replays its keyframes) every time
           blockedNonce changes, giving the "nope" feedback without any
@@ -82,7 +72,6 @@ export default function Fish({ entity, boardWidth, boardHeight, blockedNonce, is
         className="relative h-full w-full"
         animate={blockedNonce > 0 ? { x: [0, -7, 7, -5, 5, 0] } : { x: 0 }}
         transition={{ duration: 0.4, ease: 'easeInOut' }}
-        style={{ opacity: isColorActive ? 1 : 0.55 }}
       >
         {/* Idle bob, always running. */}
         <motion.div
@@ -93,10 +82,7 @@ export default function Fish({ entity, boardWidth, boardHeight, blockedNonce, is
           <svg
             viewBox="0 0 100 60"
             className="h-full w-full drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]"
-            style={{
-              transform: `rotate(${DIRECTION_ROTATION[entity.direction]}deg)`,
-              filter: isDeluxe ? `drop-shadow(0 0 5px ${swatch.glow})` : undefined,
-            }}
+            style={{ transform: `rotate(${DIRECTION_ROTATION[entity.direction]}deg)` }}
           >
             <motion.polygon
               points="78,30 100,12 100,48"
@@ -108,22 +94,9 @@ export default function Fish({ entity, boardWidth, boardHeight, blockedNonce, is
             />
             <ellipse cx="42" cy="30" rx="40" ry="23" fill={swatch.hex} />
             <ellipse cx="30" cy="22" rx="14" ry="9" fill="#ffffff" opacity={0.18} />
-            {isDeluxe && (
-              <>
-                <circle cx="55" cy="16" r="2.4" fill="#ffffff" opacity={0.9} />
-                <circle cx="63" cy="26" r="1.6" fill="#ffffff" opacity={0.7} />
-              </>
-            )}
             <circle cx="18" cy="24" r="4.2" fill="#0c1b2a" />
           </svg>
         </motion.div>
-
-        {/* Value badge — how much this piece counts toward its color's goal. */}
-        {entity.value > 1 && (
-          <div className="pointer-events-none absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-white px-1 text-[10px] font-bold text-slate-900 shadow">
-            {entity.value}
-          </div>
-        )}
 
         {/* Blocked feedback: a little "!" bubble that pops and fades. */}
         {blockedNonce > 0 && (
