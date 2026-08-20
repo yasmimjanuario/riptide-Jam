@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import type { CSSProperties } from 'react';
-import type { Exit } from '../engine';
+import type { Direction, Exit } from '../engine';
 import { getSwatch } from '../theme/palette';
 
 interface ExitMarkerProps {
@@ -9,8 +9,15 @@ interface ExitMarkerProps {
   height: number;
 }
 
+const ARROW_ROTATION: Record<Direction, number> = {
+  right: 0,
+  down: 90,
+  left: 180,
+  up: -90,
+};
+
 /**
- * A colored opening in the tank wall. Positioned along whichever edge
+ * A colored exit gate on the lot's edge. Positioned along whichever edge
  * `exit.direction` points out of, at `exit.lineIndex` (row for a
  * left/right exit, column for an up/down exit).
  */
@@ -20,26 +27,26 @@ export default function ExitMarker({ exit, width, height }: ExitMarkerProps) {
   const alongAxisSize = exit.direction === 'up' || exit.direction === 'down' ? width : height;
   const centerPercent = ((exit.lineIndex + 0.5) / alongAxisSize) * 100;
 
-  const base = 'absolute rounded-full shadow-[0_0_10px_var(--glow)]';
+  const base = 'absolute flex items-center justify-center rounded-md shadow-[0_0_8px_var(--glow)]';
   let style: CSSProperties;
   let sizeClass: string;
 
   switch (exit.direction) {
     case 'right':
-      style = { top: `${centerPercent}%`, right: -6, transform: 'translateY(-50%)' };
-      sizeClass = 'h-[14%] w-3';
+      style = { top: `${centerPercent}%`, right: -10, transform: 'translateY(-50%)' };
+      sizeClass = 'h-[13%] w-4';
       break;
     case 'left':
-      style = { top: `${centerPercent}%`, left: -6, transform: 'translateY(-50%)' };
-      sizeClass = 'h-[14%] w-3';
+      style = { top: `${centerPercent}%`, left: -10, transform: 'translateY(-50%)' };
+      sizeClass = 'h-[13%] w-4';
       break;
     case 'down':
-      style = { left: `${centerPercent}%`, bottom: -6, transform: 'translateX(-50%)' };
-      sizeClass = 'w-[14%] h-3';
+      style = { left: `${centerPercent}%`, bottom: -10, transform: 'translateX(-50%)' };
+      sizeClass = 'w-[13%] h-4';
       break;
     case 'up':
-      style = { left: `${centerPercent}%`, top: -6, transform: 'translateX(-50%)' };
-      sizeClass = 'w-[14%] h-3';
+      style = { left: `${centerPercent}%`, top: -10, transform: 'translateX(-50%)' };
+      sizeClass = 'w-[13%] h-4';
       break;
   }
 
@@ -52,8 +59,12 @@ export default function ExitMarker({ exit, width, height }: ExitMarkerProps) {
         // @ts-expect-error -- custom property consumed by the shadow above
         '--glow': swatch.glow,
       }}
-      animate={{ opacity: [0.6, 1, 0.6] }}
-      transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-    />
+      animate={{ opacity: [0.7, 1, 0.7] }}
+      transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+    >
+      <svg viewBox="0 0 24 24" className="h-3 w-3" style={{ transform: `rotate(${ARROW_ROTATION[exit.direction]}deg)` }}>
+        <path d="M6 4 L18 12 L6 20 Z" fill="#ffffff" opacity={0.9} />
+      </svg>
+    </motion.div>
   );
 }

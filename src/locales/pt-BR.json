@@ -1,24 +1,29 @@
 {
   "game": {
-    "tagline": "Solte cada peixe pela corrente da sua cor.",
-    "tankLabel": "Tabuleiro do aquário",
-    "fishAria": "Peixe {{color}}, toque para nadar para fora",
+    "tagline": "Tire cada veículo pela saída da sua cor.",
+    "boardLabel": "Tabuleiro do estacionamento",
+    "vehicleAria": "{{kind}} {{color}}, toque para sair",
     "newLevel": "Novo nível",
-    "obstacleAria": "Coral, bloqueia o caminho",
-    "tapHint": "Toque em um peixe para ele nadar até a corrente da sua cor.",
+    "obstacleAria": "Barreira, bloqueia o caminho",
+    "tapHint": "Toque em um veículo para ele sair pela saída da sua cor.",
     "status": {
-      "playing": "Tire todos os peixes do tanque!",
-      "won": "Tanque limpo!",
-      "deadlock": "Nenhum peixe consegue se mover — travou!"
+      "playing": "Esvazie o pátio!",
+      "won": "Pátio limpo!",
+      "deadlock": "Nenhum veículo consegue se mover — engarrafou!"
     }
   },
+  "vehicles": {
+    "motorcycle": "moto",
+    "car": "carro",
+    "bus": "ônibus"
+  },
   "colors": {
-    "coralPink": "rosa-coral",
-    "turquoise": "turquesa",
-    "sunYellow": "amarelo-sol",
-    "algaeGreen": "verde-alga",
-    "seaLavender": "lavanda-do-mar",
-    "clownfishOrange": "laranja-peixe-palhaço"
+    "red": "vermelho",
+    "blue": "azul",
+    "yellow": "amarelo",
+    "green": "verde",
+    "purple": "roxo",
+    "orange": "laranja"
   },
   "language": {
     "label": "Idioma",

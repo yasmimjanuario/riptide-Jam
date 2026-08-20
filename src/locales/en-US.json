@@ -1,24 +1,29 @@
 {
   "game": {
-    "tagline": "Free every fish through its matching current.",
-    "tankLabel": "Aquarium puzzle board",
-    "fishAria": "{{color}} fish, tap to swim out",
+    "tagline": "Clear every vehicle through its matching exit.",
+    "boardLabel": "Parking lot puzzle board",
+    "vehicleAria": "{{color}} {{kind}}, tap to drive out",
     "newLevel": "New level",
-    "obstacleAria": "Coral, blocks the path",
-    "tapHint": "Tap a fish to send it swimming toward its colored current.",
+    "obstacleAria": "Barrier, blocks the path",
+    "tapHint": "Tap a vehicle to send it driving toward its colored exit.",
     "status": {
-      "playing": "Swim them all out!",
-      "won": "Tank cleared!",
-      "deadlock": "No fish can move — stuck!"
+      "playing": "Clear the lot!",
+      "won": "Lot cleared!",
+      "deadlock": "No vehicle can move — gridlocked!"
     }
   },
+  "vehicles": {
+    "motorcycle": "motorcycle",
+    "car": "car",
+    "bus": "bus"
+  },
   "colors": {
-    "coralPink": "coral pink",
-    "turquoise": "turquoise",
-    "sunYellow": "sun yellow",
-    "algaeGreen": "algae green",
-    "seaLavender": "sea lavender",
-    "clownfishOrange": "clownfish orange"
+    "red": "red",
+    "blue": "blue",
+    "yellow": "yellow",
+    "green": "green",
+    "purple": "purple",
+    "orange": "orange"
   },
   "language": {
     "label": "Language",

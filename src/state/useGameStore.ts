@@ -17,7 +17,7 @@ interface GameState {
   blockedNonce: number;
   levelSeed: number;
   startNewLevel: (seed?: number) => void;
-  /** Tap a fish: exits it if legal, otherwise triggers the blocked feedback. Never costs a life on its own — that only happens on deadlock. */
+  /** Tap a vehicle: exits it if legal, otherwise triggers the blocked feedback. Never costs a life on its own — that only happens on deadlock. */
   attemptMove: (entityId: string) => void;
 }
 

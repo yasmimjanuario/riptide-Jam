@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import Tank from './components/Tank';
+import Board from './components/Board';
 import { useGameStore } from './state/useGameStore';
 import { SUPPORTED_LANGUAGES } from './i18n';
 
@@ -41,7 +41,7 @@ function App() {
       </header>
 
       {board && (
-        <Tank
+        <Board
           board={board}
           blockedEntityId={blockedEntityId}
           blockedNonce={blockedNonce}
@@ -59,7 +59,7 @@ function App() {
         <button
           type="button"
           onClick={() => startNewLevel()}
-          className="rounded-full bg-teal-400 px-5 py-2 text-sm font-semibold text-slate-900 shadow-lg transition-transform active:scale-95"
+          className="rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-slate-900 shadow-lg transition-transform active:scale-95"
         >
           {t('game.newLevel')}
         </button>

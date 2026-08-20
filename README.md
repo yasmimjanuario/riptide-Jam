@@ -1,24 +1,31 @@
-# Riptide Jam 🐠
+# Riptide Jam 🚗
 
-Protótipo de um puzzle de cores num aquário/recife, no estilo "Bus Escape /
-Traffic Jam" (mesma mecânica do Rush Hour), com peixes em vez de veículos.
-Mobile-first, jogável no navegador, pensado para portar depois para app
-nativo.
+Protótipo de um puzzle de trânsito num pátio/estacionamento, no estilo "Bus
+Puzzle: Brain Games" / "Traffic Jam" (mesma mecânica do Rush Hour): motos,
+carros e ônibus coloridos, cada um com sua saída sempre aberta, presos uns
+aos outros até você abrir caminho. Mobile-first, jogável no navegador,
+pensado para portar depois para app nativo.
 
 ## Status
 
 **Fase 1 — Passo 1: engine pura do puzzle.** ✅
-**Fase 1 — Passo 2: UI do tanque conectada à engine + i18n.** ✅
+**Fase 1 — Passo 2: UI do tabuleiro conectada à engine + i18n.** ✅
 
-O tanque é jogável no navegador: grid renderizado a partir do `Board` da
-engine, peixes coloridos com idle animado, toque para mover, nadada de
-saída, bolinha de "!" + shake quando bloqueado, bolhas ambiente e leve
-cáustica no fundo. Estrutura de i18n (`i18next` + `react-i18next`) já
-plugada desde já, com `pt-BR` e `en-US` completos e um seletor de idioma no
-header — nenhum texto de UI é hardcoded, tudo via `t('...')`.
+O pátio é jogável no navegador: grid renderizado a partir do `Board` da
+engine, veículos coloridos (moto/carro/ônibus conforme o tamanho da peça),
+toque para mover, saída deslizando pra fora, shake + "!" quando bloqueado,
+cones de sinalização como obstáculo fixo. i18n (`i18next` + `react-i18next`)
+plugado desde já, `pt-BR`/`en-US` completos, seletor de idioma no header —
+nenhum texto de UI hardcoded, tudo via `t('...')`.
 
 Próximos passos (ainda não iniciados): HUD (vidas/moedas/nível) + ações
 (dica/desfazer/embaralhar), modais de vitória/derrota, loja/ranking mock.
+
+> Nota: já existiu (e foi revertido) um redesign de mecânica com fila de
+> metas por cor/cota — o pedido foi voltar pra ideia inicial (Rush Hour
+> clássico: cada cor sempre tem saída aberta), então essa camada de metas
+> não está mais no jogo. O histórico do git ainda tem os dois commits caso
+> valha revisitar a ideia depois.
 
 ### Rodando localmente
 
@@ -33,19 +40,20 @@ npm run dev       # http://localhost:5173
 | --- | --- |
 | `engine/` | Motor puro do puzzle (ver seção abaixo) — sem React. |
 | `theme/palette.ts` | Único lugar que mapeia `ColorId` da engine → cor visual + chave i18n. A engine não conhece hex codes. |
+| `theme/vehicleKind.ts` | Mapeia o `length` (1–3) da peça pra um tipo de veículo (moto/carro/ônibus) — decisão só de UI, a engine não sabe disso. |
 | `state/useGameStore.ts` | Store Zustand: gera o nível (via `generateLevel`), expõe `attemptMove`/`startNewLevel`, guarda o estado de "bloqueado" para a UI. |
-| `components/Tank.tsx` | O tanque: grid, bolhas, cáustica, monta `Fish`/`ExitMarker`/`ObstacleMark`. |
-| `components/Fish.tsx` | Um peixe: idle bob, cauda balançando, gira para encarar seu sentido fixo, nadada de saída (`AnimatePresence`), shake + "!" quando bloqueado. |
-| `components/ExitMarker.tsx` | Abertura colorida na parede, na borda correspondente à direção/linha da saída. |
-| `components/ObstacleMark.tsx` | Coral fixo — nunca se move, nunca é tocável. |
-| `components/Bubbles.tsx` | Bolhas subindo no fundo, puramente ambiente. |
+| `components/Board.tsx` | O tabuleiro: asfalto com faixas de vaga, monta `Vehicle`/`ExitMarker`/`Barrier`. |
+| `components/Vehicle.tsx` | Um veículo: desenhado com coordenadas normalizadas ao longo/através do eixo de movimento (funciona igual em qualquer orientação, sem distorcer peças verticais compridas), roda, farol/lanterna, janelas conforme o tipo, saída deslizando (`AnimatePresence`), shake + "!" quando bloqueado. |
+| `components/ExitMarker.tsx` | Placa de saída colorida com seta, na borda correspondente à direção/linha da saída. |
+| `components/Barrier.tsx` | Cone de sinalização fixo — nunca se move, nunca é tocável. |
 | `i18n/index.ts` + `locales/*.json` | Setup do i18next, detecção automática de idioma do navegador, `pt-BR`/`en-US`. |
 
 ## A engine (`src/engine/`)
 
 A engine é agnóstica de tema — por dentro tudo é `Entity`, `Board`, `Exit`,
-nunca "peixe" ou "aquário". A camada visual (Fase 1, passo 2) é quem decide
-pintar isso como peixes num tanque.
+nunca "veículo" ou "pátio". A camada visual é quem decide pintar isso como
+carros num estacionamento (podia virar peixes, blocos, o que for, sem tocar
+na engine).
 
 | Arquivo | Responsabilidade |
 | --- | --- |
@@ -59,9 +67,10 @@ pintar isso como peixes num tanque.
 ### Mecânica implementada
 
 - Tabuleiro em grid (`width` × `height`), cada `Entity` ocupa 1–3 células em
-  linha reta, com cor e sentido de natação fixos desde a geração.
-- Correntes de saída (`Exit`) nas bordas: uma entidade só sai se existir uma
-  saída na mesma linha/coluna, na mesma direção e da mesma cor.
+  linha reta, com cor e sentido de movimento fixos desde a geração (moto =
+  1 célula, carro = 2, ônibus = 3, na camada visual).
+- Saídas (`Exit`) nas bordas, sempre abertas: uma entidade só sai se
+  existir uma saída na mesma linha/coluna, na mesma direção e da mesma cor.
 - Uma entidade só se move se todas as células entre ela e a borda, no seu
   sentido, estiverem livres de outras entidades e obstáculos fixos.
 - Movimento bloqueado não altera o tabuleiro (`tryMoveEntity` retorna
